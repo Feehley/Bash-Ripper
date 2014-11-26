@@ -13,3 +13,8 @@ The password file can be dynamically added by the user.
 #####################################################################
 
 Enjoy!
+
+#####################################################################
+
+TODO:
+Add & test other algorithms (i.e. MD5, Blowfish 2a, SHA-256).
