@@ -1,0 +1,111 @@
+#!/bin/bash
+#John Feehley
+#Assignment_1
+#Assuming sudo -s...
+############################################
+######Just some prerequisite work here######
+############################################
+
+rm -rf /home/.dump; mkdir /home/.dump;
+victim=$(whiptail --title "Victim's Username" --inputbox "What is your victim's name? " 10 60 root 3>&1 1>&2 2>&3)
+        exitstatus=$?
+if [ $exitstatus = 0 ]; then
+	passwordfile=$(whiptail --title "Password List Location" --inputbox "Where is your dictionary listed? " 10 60 passwords.txt 3>&1 1>&2 2>&3)
+		exitstatus=$?
+fi;
+echo "Here's their hash!";grep -i $victim /etc/shadow >> /home/.dump/hashy.txt; #stores hash of victim into hashy.txt
+hashy=$(</home/.dump/hashy.txt); #stores hashy.txt into variable hashy
+echo $hashy | awk 'BEGIN{ FS=":" } {print $2}' > /home/.dump/deal.txt;
+herp=$(cat /home/.dump/deal.txt);
+justhash=$(echo $herp | awk 'BEGIN{FS="$"} {print $4}'); #and this is the hash only
+algo=${herp:1:1}; # to pull the algorithm only
+salt=${herp:3:8}; #here is our salt
+echo $justhash
+echo The algorithm number used is: $algo;
+echo The salt is: $salt;
+echo "Trying:";
+echo $justhash>/home/.dump/yhsah.txt;
+success=0;
+gcc comparison.c -o comp; # just to ensure that comp will work each time.  
+if [ -z "$algo" ]; then # no password
+        echo "This user has no password!";
+        success=2;
+
+elif (( "$algo" =="1" )); then # MD5
+        #can be developed further, there is a python script for it right now
+        while read x; do
+                echo ${x}; #prints the password being tried to the screen for the user to see that it is working
+                jeez=$(python convert.py $x $salt $algo)
+                ./comp $herp $jeez;
+                if (( "$?" == "0" )); then
+                        echo The password is: $x;
+			success=1;
+                        break;
+                fi
+        done <passwordfile ;
+        echo "MD5 is currently faulty";
+
+elif (( "$algo" == "2" )); then # Blowfish
+	#can be developed further, there is a python script for it right now
+        while read x; do
+                echo ${x}; #prints the password being tried to the screen for the user to see that it is working
+                jeez=$(python convert.py $x $salt $algo)
+                ./comp $herp $jeez;
+                if (( "$?" == "0" )); then
+                        echo The password is: $x;
+			success=1;
+                        break;
+                fi
+        done <passwordfile ;
+        echo "Blowfish 2a is currently untested";
+
+elif (( "$algo" == "5" )); then # SHA-256
+	#can be developed further, there is a python script for it right now
+        while read x; do
+                echo ${x}; #prints the password being tried to the screen for the user to see that it is working
+                jeez=$(python convert.py $x $salt $algo)
+                ./comp $herp $jeez;
+                if (( "$?" == "0" )); then
+                        echo The password is: $x;
+			success=1;
+                        break;
+                fi
+        done <passwordfile ;
+	echo "SHA-256 is currently untested";
+
+elif (( "$algo" == "6" )); then # SHA-512 
+	while read x; do
+	        echo ${x}; #prints the password being tried to the screen for the user to see that it is working
+		jeez=$(python convert.py $x $salt $algo)
+		./comp $herp $jeez;
+		if (( "$?" == "0" )); then
+                       	echo The password is: $x;
+			success=1;
+			break;
+                fi
+	done <passwordfile ;
+
+else
+	echo "You are facing an unknown algorithm!"
+
+fi
+if (( "$success" == "1" )); then
+        echo "Congratulations! There was a hash match!";
+	
+elif (( "$success" == "2" )); then
+	echo "Happy Hunting!";
+else
+	echo "Bummer! Try another dictionary list!";
+fi
+rm -rf /home/.dump/
+
+#############################################################
+###### In hind-sight, I should have just done this in  ######
+###### only one language for a smaller footprint. If I ######
+###### I have more time, I can probably get the MD5,   ######
+###### Blowfish(2a), and SHA256 working properly. So   ######
+###### for now, SHA512 works.  If there are questions  ######
+###### about what/or why I did what I did, I will      ######
+###### gladly explain. I really enjoyed this project,  ######
+###### thank you!                                      ######
+#############################################################

@@ -1,0 +1,11 @@
+There is no need to compile anything, the bash script takes care of it all.
+
+"BashRipper"
+The original program without a GUI.
+Please add your own dictionary list into this directory and name it "passwords.txt".
+
+"BashRipperGUI" 
+Uses a whiptail GUI that can be used on most Unix distros.
+The password file can be dynamically added by the user.  
+
+Enjoy!
